@@ -345,12 +345,13 @@ function buildMap(){
     HALLS.filter(h=>h.cinema===cin).forEach(h => { const o = document.createElement('option'); o.value = h.key; o.textContent = `${h.cinema} · ${h.name}`; og.appendChild(o); });
     sel.appendChild(og);
   });
+  { const og = document.createElement('optgroup'); og.label = 'Festival'; const o = document.createElement('option'); o.value = 'carthage'; o.textContent = 'Festival · Théâtre romain de Carthage'; og.appendChild(o); sel.appendChild(og); }
   $('b-view').onclick = () => backToHall();
   $('book').onclick = () => { const b = $('book'); b.classList.add('pressed'); setTimeout(()=>b.classList.remove('pressed'), 180); };
   const fromHash = location.hash.slice(1);
   const start = HALLS.some(h=>h.key===fromHash) ? fromHash : DEFAULT_KEY;
   sel.value = start;
-  sel.onchange = () => { loadHall(sel.value); try { history.replaceState(null, '', '#' + sel.value); } catch(e){} };
+  sel.onchange = () => { if (sel.value === 'carthage') { location.href = 'carthage.html'; return; } loadHall(sel.value); try { history.replaceState(null, '', '#' + sel.value); } catch(e){} };
   loadHall(start);
 }
 

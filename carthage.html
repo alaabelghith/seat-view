@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Théâtre romain de Carthage en 3D : choisissez une place sur les gradins ou les chaises et voyez la scène. Démo par Anything Visual.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>Carthage Theatre View</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: full-bleed open-air theatre at night; docked panel with the plan (right on desktop, bottom sheet on phone). Single night look on purpose. */
+:root{
+  --night:#0d1018; --night-2:#171c28; --panel:rgba(13,16,24,.9); --line:#2b3242;
+  --ink:#f3ede2; --muted:#a9a99f; --amber:#f2b33d; --amber-ink:#2a1a05;
+  --stone:#c9b48f; --stone-2:#9d8a6a; --chair:#e9e4da; --stage:#3a3f4d;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--body);overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#stage{position:fixed;inset:0}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.panel{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));
+  bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(520px,46vw);background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;backdrop-filter:blur(10px);display:flex;flex-direction:column;gap:14px;padding:16px;overflow:hidden}
+.top{display:flex;gap:8px;align-items:center}
+select{flex:1;min-width:0;font:inherit;font-size:.95rem;background:var(--night-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+select:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.icon{flex:none;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;border:1px solid var(--line);background:var(--night-2);color:var(--ink);cursor:pointer;padding:0}
+.icon:hover{border-color:var(--muted)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.mapwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#plan{width:100%;height:100%;max-height:100%;cursor:crosshair;touch-action:manipulation}
+#plan .zone{cursor:pointer}
+.foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cat{font-family:var(--display);font-weight:800;font-size:1.6rem;letter-spacing:.02em;line-height:1;text-transform:uppercase}
+.cat small{display:block;font-family:var(--body);font-weight:400;font-size:.75rem;color:var(--muted);letter-spacing:0;margin-top:3px;text-transform:none}
+.book{margin-left:auto;display:inline-block;text-decoration:none;background:var(--amber);color:var(--amber-ink);font-weight:600;border-radius:10px;padding:12px 18px;font-size:.95rem}
+.book:hover{filter:brightness(1.08)}
+@media (max-width:760px){
+  .panel{top:auto;left:max(16px,env(safe-area-inset-left,0px));width:auto;height:52%;padding:12px;gap:10px}
+  .cat{font-size:1.3rem}
+}
+</style>
+
+</head><body>
+<div id="stage" aria-label="3D view of the Roman theatre of Carthage"></div>
+<aside class="panel">
+  <div class="top">
+    <select id="venueSel" aria-label="Salle"><optgroup label="Cinémas"><option value="a1">Cinéma A · Salle 1</option><option value="a2">Cinéma A · Salle 2</option><option value="a3">Cinéma A · Salle 3</option><option value="a4">Cinéma A · Salle 4</option><option value="a5">Cinéma A · Salle 5</option><option value="a6">Cinéma A · Salles 6, 7, 8</option><option value="b1">Cinéma B · Salle 1</option><option value="b2">Cinéma B · Salle 2</option><option value="b3">Cinéma B · Salle 3</option><option value="b4">Cinéma B · Salles 4, 5</option><option value="b6">Cinéma B · Salle 6</option><option value="c1">Cinéma C · Salle 1</option><option value="c2">Cinéma C · Salles 2, 3</option><option value="c4">Cinéma C · Salle 4</option><option value="c5">Cinéma C · Salle 5</option><option value="c6">Cinéma C · Salle 6</option></optgroup><optgroup label="Festival"><option value="carthage" selected>Festival · Théâtre romain de Carthage</option></optgroup></select>
+    <button class="icon" id="b-view" aria-label="Vue depuis la scène" title="Vue depuis la scène"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+  </div>
+  <div class="mapwrap"><svg id="plan" viewBox="-46 -2 92 70" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Plan du théâtre : cliquez pour choisir une place"></svg></div>
+  <div class="foot">
+    <div class="cat" id="cat">≈ 7 500<small>places · chaises et gradins</small></div>
+    <a class="book" href="https://teskerti.tn/category/festival-international-de-carthage" target="_blank" rel="noopener">Réservez maintenant</a>
+  </div>
+</aside>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------- Theatre geometry (metres). Measured on satellite imagery, ±1–2 m ---------- */
+const T = { r0: 14, tiers: 33, tread: 0.82, rise: 0.40, walkAfter: 16, walk: 1.4,
+  stageW: 29, stageD: 14, stageH: 1.5, stageFront: -4 };
+const tierR = k => T.r0 + k*T.tread + (k > T.walkAfter ? T.walk : 0);      // inner radius of tier k
+const tierY = k => (k+1)*T.rise;                                            // top surface of tier k
+const R_END = tierR(T.tiers), Y_TOP = tierY(T.tiers-1);
+const FOCUS = new THREE.Vector3(0, T.stageH + 2.6, -10);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+
+/* ---------- Places: chairs on the orchestra, free placement on the tiers ---------- */
+const chairs = [];
+for (let z = T.stageFront + 1.0, row = 1; z < T.r0 - 1.2; z += 0.95, row++){
+  for (let x = -13.2; x <= 13.2; x += 0.55){
+    if (Math.abs(x) < 0.8 || Math.abs(Math.abs(x) - 7.2) < 0.55) continue;
+    if (z > 0 && Math.hypot(x, z) > T.r0 - 1.0) continue;
+    chairs.push({ x, z, row });
+  }
+}
+function placeAt(x, z){                       // any point on the plan → a place to sit
+  const r = Math.hypot(x, Math.max(z, 0));
+  if (z <= 0 || r < T.r0 - 0.6){
+    if (z < T.stageFront + 0.6) return null;
+    let best = null, bd = 1e9;
+    for (const c of chairs){ const d = (c.x-x)**2 + (c.z-z)**2; if (d < bd){ bd = d; best = c; } }
+    return best && bd < 4 ? { kind:'chaise', x: best.x, z: best.z, y: 0, eye: 1.15, row: best.row } : null;
+  }
+  if (z < 0) return null;
+  for (let k = 0; k < T.tiers; k++){
+    if (r >= tierR(k) && r < tierR(k+1)){
+      const inWalk = k === T.walkAfter && r > tierR(k) + T.tread;
+      const rr = tierR(k) + (inWalk ? T.tread/2 : Math.min(T.tread/2, r - tierR(k)));
+      const a = Math.atan2(x, z);
+      return { kind:'gradin', x: rr*Math.sin(a), z: rr*Math.cos(a), y: tierY(k), eye: 0.85, row: k+1 };
+    }
+  }
+  return null;
+}
+
+/* ---------- Renderer ---------- */
+const stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0e1a);
+scene.fog = new THREE.Fog(0x0a0e1a, 90, 260);
+const camera = new THREE.PerspectiveCamera(60, 1, .1, 800);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.maxDistance = 140; controls.minDistance = 2; controls.maxPolarAngle = Math.PI*.495;
+
+scene.add(new THREE.HemisphereLight(0x8696c4, 0x2a2418, 0.75));
+const flood = new THREE.DirectionalLight(0xffd6a0, 1.5); flood.position.set(0, 22, -26); flood.target.position.set(0, 6, 25); scene.add(flood, flood.target);
+const fillL = new THREE.PointLight(0xff4fa0, 260, 60, 1.6); fillL.position.set(-10, 9, -8); scene.add(fillL);
+const fillR = new THREE.PointLight(0x4fb6ff, 260, 60, 1.6); fillR.position.set(10, 9, -8); scene.add(fillR);
+const mat = (c, r=.9, flat=false) => new THREE.MeshStandardMaterial({ color: c, roughness: r, flatShading: flat });
+const add = (geo, m, x=0, y=0, z=0) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); scene.add(o); return o; };
+const box = (w,h,d,m,x,y,z) => add(new THREE.BoxGeometry(w,h,d), m, x, y, z);
+
+// stars
+{ const n = 1600, p = new Float32Array(n*3);
+  for (let i=0;i<n;i++){ const u=Math.random()*Math.PI*2, v=Math.acos(Math.random()*.95), r=380; p[i*3]=r*Math.sin(v)*Math.cos(u); p[i*3+1]=r*Math.cos(v)+20; p[i*3+2]=r*Math.sin(v)*Math.sin(u); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p,3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xdfe6ff, size: 1.3, sizeAttenuation: false, fog: false }))); }
+
+// ground + hill behind the bowl
+add(new THREE.PlaneGeometry(600, 600).rotateX(-Math.PI/2), mat(0x1c1a14), 0, -0.02, 0);
+{ const pts = [new THREE.Vector2(R_END+0.6, Y_TOP+1.2), new THREE.Vector2(R_END+12, Y_TOP+1.5), new THREE.Vector2(R_END+40, Y_TOP-3), new THREE.Vector2(R_END+80, 0)];
+  const hill = new THREE.Mesh(new THREE.LatheGeometry(pts, 64, -Math.PI/2 - .35, Math.PI + .7), mat(0x2a2b1c, 1, true)); hill.material.side = THREE.DoubleSide; scene.add(hill); }
+
+// the bowl: one stepped lathe profile
+const stone = mat(0xc9b48f, .95, true);
+let cavea;
+{ const pts = [new THREE.Vector2(T.r0, 0)];
+  for (let k = 0; k < T.tiers; k++){ const r = tierR(k), y = tierY(k); pts.push(new THREE.Vector2(r, y)); pts.push(new THREE.Vector2(tierR(k+1), y)); }
+  pts.push(new THREE.Vector2(R_END+0.6, Y_TOP+1.2));
+  cavea = new THREE.Mesh(new THREE.LatheGeometry(pts, 160, -Math.PI/2, Math.PI), stone); cavea.material.side = THREE.DoubleSide; scene.add(cavea); }
+// radial stairs (lighter stone strips on every tier)
+{ const lower = [...Array(7)].map((_,i)=> -Math.PI/2 + (i+1)*Math.PI/8), upper = [...Array(15)].map((_,i)=> -Math.PI/2 + (i+1)*Math.PI/16);
+  const list = [];
+  for (let k = 0; k < T.tiers; k++) for (const a of (k <= T.walkAfter ? lower : upper)) list.push([k,a]);
+  const im = new THREE.InstancedMesh(new THREE.BoxGeometry(1.0, 0.22, T.tread*.98), mat(0xe2d3b4, .9), list.length), m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
+  list.forEach(([k,a],i) => { const r = tierR(k) + T.tread/2; q.setFromAxisAngle(new THREE.Vector3(0,1,0), a); m4.compose(new THREE.Vector3(r*Math.sin(a), tierY(k)+0.06, r*Math.cos(a)), q, new THREE.Vector3(1,1,1)); im.setMatrixAt(i, m4); });
+  scene.add(im); }
+// walkway, outer wall
+{ const g = new THREE.RingGeometry(tierR(T.walkAfter)+T.tread, tierR(T.walkAfter+1), 160, 1, 0, Math.PI).rotateX(Math.PI/2);
+  const wm = mat(0xb9a47f, .95); wm.side = THREE.DoubleSide; add(g, wm, 0, tierY(T.walkAfter)+0.01, 0);
+  const w = new THREE.Mesh(new THREE.CylinderGeometry(R_END+0.6, R_END+0.6, 2.2, 160, 1, true, -Math.PI/2, Math.PI), mat(0x8e7d61, .95)); w.material.side = THREE.DoubleSide; w.position.y = Y_TOP + 1.1; scene.add(w); }
+// orchestra floor + front area
+{ const om = mat(0x8c7f68, .95); om.side = THREE.DoubleSide; add(new THREE.CircleGeometry(T.r0, 96, 0, Math.PI).rotateX(Math.PI/2), om, 0, 0.01, 0); }
+box(2*T.r0, .02, -T.stageFront, mat(0x8c7f68, .95), 0, 0.01, T.stageFront/2);
+// chairs
+let chairMesh;
+{ chairMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(.46,.06,.44), mat(0xe9e4da, .6), chairs.length);
+  const backs = new THREE.InstancedMesh(new THREE.BoxGeometry(.46,.42,.05), mat(0xe9e4da, .6), chairs.length), m4 = new THREE.Matrix4();
+  chairs.forEach((c,i) => { m4.makeTranslation(c.x, .45, c.z); chairMesh.setMatrixAt(i, m4); m4.makeTranslation(c.x, .68, c.z + .22); backs.setMatrixAt(i, m4); });
+  scene.add(chairMesh, backs); }
+// stage, roof, screens, Roman columns behind
+const zc = T.stageFront - T.stageD/2;
+box(T.stageW, T.stageH, T.stageD, mat(0x23262f, .7), 0, T.stageH/2, zc);
+const truss = mat(0x5a5f6b, .5);
+for (const sx of [-1,1]) for (const sz of [T.stageFront-.3, T.stageFront-T.stageD+.3]) box(.5, 13, .5, truss, sx*(T.stageW/2-.3), 6.5, sz);
+box(T.stageW, .8, .6, truss, 0, 13, T.stageFront-.3); box(T.stageW, .8, .6, truss, 0, 13, T.stageFront-T.stageD+.3);
+box(T.stageW+1, .3, T.stageD, mat(0x1b1d24, .8), 0, 13.6, zc);
+const lc = document.createElement('canvas'); lc.width = 1024; lc.height = 420; const lg = lc.getContext('2d');
+const ltex = new THREE.CanvasTexture(lc); ltex.colorSpace = THREE.SRGBColorSpace;
+function drawLED(t){
+  const W = lc.width, H = lc.height, g = lg.createLinearGradient(0,0,W,H);
+  g.addColorStop(0, `hsl(${(t*20)%360},70%,18%)`); g.addColorStop(1, `hsl(${(t*20+120)%360},70%,12%)`);
+  lg.fillStyle = g; lg.fillRect(0,0,W,H);
+  for (let i=0;i<48;i++){ const h = (Math.sin(t*3+i*.6)*.5+.5)*(Math.sin(t*1.3+i*.21)*.3+.7)*H*.8; lg.fillStyle = `hsla(${(i*7+t*40)%360},90%,62%,.9)`; lg.fillRect(i*(W/48)+3, H-h, W/48-6, h); }
+  lg.fillStyle = 'rgba(255,240,210,.85)'; lg.beginPath(); lg.arc(W/2, H*.42, 46+Math.sin(t*4)*10, 0, 7); lg.fill();
+  ltex.needsUpdate = true;
+}
+drawLED(0);
+const ledM = new THREE.MeshBasicMaterial({ map: ltex, toneMapped: false });
+add(new THREE.PlaneGeometry(20, 8.2), ledM, 0, T.stageH + 4.6, T.stageFront - T.stageD + .7);
+for (const sx of [-1,1]){ const s = add(new THREE.PlaneGeometry(6.4, 4), ledM, sx*18.5, 7, T.stageFront - 2); s.rotation.y = -sx*0.25; box(.4, 9, .4, truss, sx*18.5, 4.5, T.stageFront - 2.3); }
+// light beams
+{ const cone = new THREE.ConeGeometry(2.4, 12, 24, 1, true).translate(0, -6, 0);
+  [[-9,0xff5ab0],[-3,0xffd27a],[3,0x6ac8ff],[9,0xb98bff]].forEach(([x,c],i) => {
+    const m = new THREE.Mesh(cone, new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: .13, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    m.position.set(x, 12.6, T.stageFront - 4); m.rotation.x = .35; m.rotation.z = (i-1.5)*.12; scene.add(m); m.userData.beam = i; });
+}
+// column remnants behind the stage
+{ const colM = mat(0xd8c7a3, .9);
+  for (let i=0;i<14;i++){ const x = -17 + i*2.6, h = 2.5 + ((i*37)%7)*.9; add(new THREE.CylinderGeometry(.42,.48,h,14), colM, x, h/2, T.stageFront - T.stageD - 3); }
+  box(40, 1.2, 3, mat(0xb7a580, .95), 0, .6, T.stageFront - T.stageD - 3); }
+
+/* ---------- Plan (SVG, metres; stage at the bottom) ---------- */
+const svg = $('plan'), NS = 'http://www.w3.org/2000/svg';
+const P = (x, z) => [x, 45 - z];      // plan coords
+const el = (tag, attrs, parent=svg) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+const arc = (r) => { const [x1,y1] = P(-r,0), [x2,y2] = P(r,0); return `M${x1} ${y1} A${r} ${r} 0 0 1 ${x2} ${y2}`; };
+{ const [ax,ay] = P(-R_END,0), [bx,by] = P(R_END,0), [cx,cy] = P(T.r0,0), [dx,dy] = P(-T.r0,0);
+  el('path', { d:`M${ax} ${ay} A${R_END} ${R_END} 0 0 1 ${bx} ${by} L${cx} ${cy} A${T.r0} ${T.r0} 0 0 0 ${dx} ${dy} Z`, fill:'#c9b48f', 'fill-opacity':.22, stroke:'#c9b48f', 'stroke-width':.25 });
+  for (let k=1;k<T.tiers;k+=2) el('path', { d: arc(tierR(k)), fill:'none', stroke:'#c9b48f', 'stroke-opacity':.28, 'stroke-width':.12 });
+  el('path', { d: arc(tierR(T.walkAfter)+T.tread+T.walk/2), fill:'none', stroke:'#c9b48f', 'stroke-opacity':.7, 'stroke-width':T.walk*.8 });
+  [...Array(7)].map((_,i)=> -Math.PI/2+(i+1)*Math.PI/8).forEach(a => { const [x1,y1]=P(T.r0*Math.sin(a),T.r0*Math.cos(a)), [x2,y2]=P(R_END*Math.sin(a),R_END*Math.cos(a)); el('line',{x1,y1,x2,y2,stroke:'#0d1018','stroke-width':.7}); });
+  const [ox,oy] = P(-T.r0, 0); el('path', { d:`M${ox} ${oy} A${T.r0} ${T.r0} 0 0 1 ${P(T.r0,0)[0]} ${oy} L${P(T.r0,T.stageFront)[0]} ${P(0,T.stageFront)[1]} L${ox} ${P(0,T.stageFront)[1]} Z`, fill:'#e9e4da', 'fill-opacity':.08 });
+  const g = el('g', { fill:'#e9e4da', 'fill-opacity':.75 });
+  for (const c of chairs){ const [x,y] = P(c.x, c.z); el('rect', { x:x-.2, y:y-.2, width:.4, height:.4 }, g); }
+  const [sx,sy] = P(-T.stageW/2, T.stageFront); el('rect', { x:sx, y:sy, width:T.stageW, height:T.stageD, fill:'#3a3f4d', rx:.4 });
+  el('rect', { x:-10, y:sy+T.stageD-1.4, width:20, height:.9, fill:'#f3ede2', opacity:.85 });
+}
+const marker = el('g', { opacity: 0 }); el('circle', { r: 1.6, fill:'#f2b33d', stroke:'#0d1018', 'stroke-width':.4 }, marker);
+el('path', { d:'M0 -1.6 L0 -5', stroke:'#f2b33d', 'stroke-width':.5, 'stroke-linecap':'round' }, marker);
+svg.addEventListener('click', e => {
+  const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+  const place = placeAt(p.x, 45 - p.y); if (place) sitIn(place);
+});
+
+/* ---------- Camera ---------- */
+const STAGE_POS = new THREE.Vector3(0, T.stageH + 1.8, T.stageFront - 1.5), STAGE_T = new THREE.Vector3(0, 7, 24);
+let mode = 'hall', tween = null, yaw = 0, pitch = 0, current = null;
+const curTarget = new THREE.Vector3();
+camera.position.copy(STAGE_POS); controls.target.copy(STAGE_T);
+function startTween(toPos, toTarget, done){
+  const fromPos = camera.position.clone(), fromT = (mode==='hall' ? controls.target.clone() : curTarget.clone());
+  if (reduce){ camera.position.copy(toPos); curTarget.copy(toTarget); camera.lookAt(toTarget); done&&done(); return; }
+  tween = { fromPos, fromT, toPos, toTarget, t: 0, done };
+}
+const eyeOf = p => new THREE.Vector3(p.x, p.y + p.eye, p.z + (p.kind === 'chaise' ? .05 : 0));
+function sitIn(p){
+  current = p; yaw = pitch = 0; controls.enabled = false;
+  if (mode === 'hall') curTarget.copy(controls.target);
+  startTween(eyeOf(p), FOCUS.clone(), () => { mode = 'seat'; });
+  if (mode === 'hall') mode = 'moving';
+  render();
+}
+function backToStage(){
+  current = null;
+  startTween(STAGE_POS.clone(), STAGE_T.clone(), () => { mode = 'hall'; controls.target.copy(STAGE_T); controls.enabled = true; });
+  if (!reduce) mode = 'moving';
+  render();
+}
+$('b-view').onclick = backToStage;
+$('venueSel').onchange = e => { if (e.target.value !== 'carthage') location.href = 'index.html#' + e.target.value; };
+function render(){
+  if (!current){ $('cat').innerHTML = '≈ 7 500<small>places · chaises et gradins</small>'; marker.setAttribute('opacity', 0); return; }
+  const m = metrics(current);
+  $('cat').innerHTML = `${current.kind === 'chaise' ? 'Chaises' : 'Gradins'}<small>rang ${current.row} · ${Math.round(m.dist)} m de la scène</small>`;
+  const [x, y] = P(current.x, current.z), a = Math.atan2(FOCUS.x - current.x, FOCUS.z - current.z) * 180/Math.PI;
+  marker.setAttribute('transform', `translate(${x} ${y}) rotate(${a})`); marker.setAttribute('opacity', 1);
+}
+function metrics(p){ const e = eyeOf(p); return { dist: Math.hypot(e.x - FOCUS.x, e.z - T.stageFront) }; }
+
+/* ---------- 3D picking ---------- */
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+let down = null, dragging = false;
+renderer.domElement.addEventListener('pointerdown', e => { down = { x:e.clientX, y:e.clientY, yaw, pitch }; dragging = false; });
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!down) return;
+  const dx = e.clientX - down.x, dy = e.clientY - down.y;
+  if (Math.abs(dx) + Math.abs(dy) > 4) dragging = true;
+  if (mode === 'seat'){ yaw = THREE.MathUtils.clamp(down.yaw - dx*.004, -1.3, 1.3); pitch = THREE.MathUtils.clamp(down.pitch - dy*.004, -.5, .7); }
+});
+renderer.domElement.addEventListener('pointerup', e => {
+  if (down && !dragging){
+    const r = renderer.domElement.getBoundingClientRect();
+    ptr.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+    ray.setFromCamera(ptr, camera);
+    const hit = ray.intersectObjects([cavea, chairMesh])[0];
+    if (hit){ const p = placeAt(hit.point.x, hit.point.z); if (p) sitIn(p); }
+  }
+  down = null;
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && current) backToStage(); });
+
+/* ---------- Loop ---------- */
+function resize(){
+  const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false);
+  const pr = document.querySelector('.panel').getBoundingClientRect();
+  if (w > 760){ const pw = w - pr.left; camera.aspect = (w + pw)/h; camera.setViewOffset(w + pw, h, pw, 0, w, h); }
+  else { const ph = Math.max(0, h - pr.top); camera.aspect = w/(h + ph); camera.setViewOffset(w, h + ph, 0, ph, w, h); }
+  camera.fov = w < h ? 72 : 60; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+const ease = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+const clock = new THREE.Clock(); let acc = 0, ft = 0;
+renderer.setAnimationLoop(() => {
+  const dt = clock.getDelta(); ft += dt; acc += dt;
+  if (acc > 1/30){ drawLED(reduce ? 0 : ft); acc = 0; }
+  scene.traverse(o => { if (o.userData.beam !== undefined && !reduce) o.rotation.z = Math.sin(ft*.6 + o.userData.beam)*.35; });
+  if (tween){
+    tween.t = Math.min(1, tween.t + dt/1.6); const k = ease(tween.t);
+    camera.position.lerpVectors(tween.fromPos, tween.toPos, k);
+    curTarget.lerpVectors(tween.fromT, tween.toTarget, k); camera.lookAt(curTarget);
+    if (tween.t >= 1){ const d = tween.done; tween = null; d && d(); }
+  } else if (mode === 'seat' && current){
+    const eye = eyeOf(current); camera.position.copy(eye);
+    const dir = FOCUS.clone().sub(eye).normalize();
+    dir.applyAxisAngle(new THREE.Vector3(0,1,0), yaw);
+    const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0)).normalize();
+    dir.applyAxisAngle(right, pitch);
+    curTarget.copy(eye).add(dir.multiplyScalar(10)); camera.lookAt(curTarget);
+  } else if (mode === 'hall'){ controls.update(); }
+  renderer.render(scene, camera);
+});
+render();
+</script>
+
+</body></html>

@@ -1,12 +1,12 @@
 # Seat View
 
-Pick a cinema seat and see the screen from it before you book. Each hall is generated from the seat map a booking site already serves, and runs in any browser.
+Pick a seat and see the show from it before you book: cinema halls generated from booking seat maps, and the Roman theatre of Carthage for the Festival International de Carthage. Runs in any browser.
 
 ![Seat View demo](docs/demo.gif)
 
 *Recorded from the live page: tap a seat on the plan, the camera moves to that seat at seated eye height.*
 
-**Live demo:** https://alaabelghith.github.io/lab/seat-view/ (works on phones; no app, no plugin)
+**Live demo:** https://alaabelghith.github.io/lab/seat-view/ (works on phones; no app, no plugin) · Carthage: https://alaabelghith.github.io/lab/seat-view/carthage.html
 
 ## How it works
 
@@ -15,6 +15,10 @@ Pick a cinema seat and see the screen from it before you book. Each hall is gene
 - **Procedural room.** Stadium rake (0.30–0.34 m per row), 1.05 m row pitch, side walls with acoustic slats, step lights on every aisle, curtains, and a 2.39:1 screen sized from the seating width.
 - **Fast.** All seats of a hall are two `InstancedMesh` objects (cushions and backs), so a 400-seat hall is two draw calls.
 - **Sit anywhere.** A click on the 3D seats (raycast) or on the 2D plan flies the camera to seated eye height (1.15 m) facing the screen. Drag to look around. The page also computes the distance to the screen, how much of the view the screen fills (THX recommends about 36°) and the head tilt.
+
+## Théâtre romain de Carthage (`carthage.html`)
+
+The festival sells two unnumbered categories, **Chaises** (chairs on the orchestra) and **Gradins** (stone tiers), so this view has no seat numbers: click anywhere on the plan or on the tiers and chairs in 3D, and the camera sits there. The bowl is built from measurements taken on satellite imagery (≈ 42 m outer radius, ≈ 14 m orchestra, ≈ 33 tiers, ≈ 29 × 14 m festival stage) as one stepped lathe; stairs, walkway, chairs, stage, LED screens and light beams are procedural. The venue picker links both pages.
 
 ## The demo data
 
@@ -48,7 +52,8 @@ node test/adapter.test.mjs
 
 | Path | Contents |
 |---|---|
-| `index.html` | The viewer: scene, plan, hall picker (single file) |
+| `index.html` | Cinema viewer: scene, plan, hall picker (single file) |
+| `carthage.html` | Théâtre romain de Carthage viewer (single file) |
 | `data/halls.json` | The 16 hall layouts |
 | `src/adapter.js` | Seat-map JSON ↔ hall format |
 | `test/adapter.test.mjs` | Round-trip test on all 16 layouts |
