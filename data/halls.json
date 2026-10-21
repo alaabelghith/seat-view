@@ -1,0 +1,382 @@
+[
+{
+"key": "a1",
+"cinema": "Cinéma A",
+"name": "Salle 1",
+"halls": [
+1
+],
+"cap": 379,
+"rows": [
+"A:ssss.ssssssssddssssss.ssss",
+"B:ssss.ssssssssssssssss.ssss",
+"C:ssss.sssddssddssddsss.ssss",
+"D:ssss.ssssssssssssssss.ssss",
+"E:ssss.ssssssddddssssss.ssss",
+"F:ddss.ssssssssssssssss.ssdd",
+"G:ssss.ssssssssssssssss.ssss",
+"H:ssss.ssssssssssssssss.ssss",
+"I:ssss.sssddsssssssddss.ssss",
+"J:ssss.ssssssddddssssss.ssss",
+"K:ssss.ssssssssssssssss.ssss",
+"L:ssss.ssssssssssssssss.ssss",
+"M:ss.s.ss.ssssss.ss.sss.sss",
+"N:ssss.sssddssddsssddss.ssss",
+"O:ssss.ssssssddddssssss.ssss",
+"P:ssss.ssssssssssssssss.ssss"
+],
+"first": 1,
+"note": ""
+},
+{
+"key": "a2",
+"cinema": "Cinéma A",
+"name": "Salle 2",
+"halls": [
+2
+],
+"cap": 244,
+"rows": [
+"A:ss.ssssssssddsssss.ss",
+"B:ss.sssssssssssssss.ss",
+"C:ss.sssddssddssddss.ss",
+"D:ss.sssssssssssssss.ss",
+"E:ss.ssssssddddsssss.ss",
+"F:ss.sssssssssssssss.ss",
+"G:ss.sssssssssssssss.ss",
+"H:ss.sssssssssssssss.ss",
+"I:ss.sssddsssssssdds.ss",
+"J:ss.ssssssddddsssss.ss",
+"K:ss.sssssssssssssss.ss",
+"L:ss.sssssssssssssss.ss",
+"M:ss.sssss..ss.sssss.ss"
+],
+"first": 3,
+"note": ""
+},
+{
+"key": "a3",
+"cinema": "Cinéma A",
+"name": "Salle 3",
+"halls": [
+3
+],
+"cap": 168,
+"rows": [
+"A:ss.ssssssssddsssss.ss",
+"B:ss.sssssssssssssss.ss",
+"C:ss.sssddssddssddss.ss",
+"D:ss.sssssssssssssss.ss",
+"E:ss.ssssssddddsssss.ss",
+"F:ss.sssssssssssssss.ss",
+"G:ss.sssssssssssssss.ss",
+"H:ss.sssssssssssssss.ss",
+"I:ss.sw.dd.ssssss.dd.ss"
+],
+"first": 3,
+"note": ""
+},
+{
+"key": "a4",
+"cinema": "Cinéma A",
+"name": "Salle 4",
+"halls": [
+4
+],
+"cap": 225,
+"rows": [
+"A:ss.ss.sssssddss.ss.ss",
+"B:ss.sssssssssssssss.ss",
+"C:ss.sssddssddssddss.ss",
+"D:ss.sssssssssssssss.ss",
+"E:ss.ssssssddddsssss.ss",
+"F:ss.sssssssssssssss.ss",
+"G:ss.sssssssssssssss.ss",
+"H:ss.sssssssssssssss.ss",
+"I:ss.sssddsssssssdds.ss",
+"J:ss.ssssssddddsssss.ss",
+"K:ss.sssssssssssssss.ss",
+"L:ss.ssssssss.ssssss.ss"
+],
+"first": 3,
+"note": ""
+},
+{
+"key": "a5",
+"cinema": "Cinéma A",
+"name": "Salle 5",
+"halls": [
+5
+],
+"cap": 178,
+"rows": [
+"A:ssss.ssssssddssss.ssss",
+"B:ssss.ssssssssssss.ssss",
+"C:ssss.sddssddssdds.ssss",
+"D:ssss.ssssssssssss.ssss",
+"E:ssss.ssssddddssss.ssss",
+"F:ssss.ssssssssssss.ssss",
+"G:ssss.ssssssssssss.ssss",
+"H:ssss.ssssssssssss.ssss",
+"I:ssss.sdd.sssss.dd.ssss"
+],
+"first": 3,
+"note": ""
+},
+{
+"key": "a6",
+"cinema": "Cinéma A",
+"name": "Salles 6, 7, 8",
+"halls": [
+6,
+7,
+8
+],
+"cap": 126,
+"rows": [
+"A:ssssssssdd.sssss",
+"B:ssssssssssssssss",
+"C:sssddssddssddsss",
+"D:ssssssssssssssss",
+"E:ssssssddddssssss",
+"F:ssssssssssssssss",
+"G:ssssssssssssssss",
+"H:ssssssssss.sssss"
+],
+"first": 5,
+"note": ""
+},
+{
+"key": "b1",
+"cinema": "Cinéma B",
+"name": "Salle 1",
+"halls": [
+1
+],
+"cap": 408,
+"rows": [
+"A:ssssssdd...s.ss.ss.ss.s...ddssssss",
+"B:ssssssss.sssddssddssddsss.ssssssss",
+"C:ssssssss.sssddssddssddsss.ssssssss",
+"D:....ssss.ssssssssssssssss.ssss",
+"E:....ssss.sssssddssddsssss.ssss",
+"F:....ssss.ssssssddddssssss.ssss",
+"G:....ssss.ssssssssssssssss.ssss",
+"H:.........sssddssddssddsss",
+"I:.........ssssssssssssssss",
+"J:ssssssss.sssddssssssddsss.ssssssss",
+"K:ssssssss.ssssssddddssssss.ssssssss",
+"L:ssssssss.ssssssssssssssss.ssssssss",
+"M:ssddssss.sssddssssssddsss.ssssddss",
+"N:ssssssss.sssssssddsssssss.ssssssss",
+"O:ssssssss.ssssssssssssssss.ssssssss"
+],
+"first": 1,
+"note": ""
+},
+{
+"key": "b2",
+"cinema": "Cinéma B",
+"name": "Salle 2",
+"halls": [
+2
+],
+"cap": 138,
+"rows": [
+"A:sdd.s.ssssssssss.s.dds",
+"B:sss.ssddssddssddss.sss",
+"C:sss.ssddssddssddss.sss",
+"D:sss.ssssssssssssss.sss",
+"E:sss.ssssddssddssss.sss",
+"F:sss.sssssddddsssss.sss",
+"G:sss.ssssssssssssss.sss"
+],
+"first": 6,
+"note": ""
+},
+{
+"key": "b3",
+"cinema": "Cinéma B",
+"name": "Salle 3",
+"halls": [
+3
+],
+"cap": 250,
+"rows": [
+"A:ssss.ss.sss.ssss.sss.ddss",
+"B:ssss.sssddssddssddss.ssss",
+"C:ssss.sssddssddssddss.ssss",
+"D:ssss.sssssssssssssss.ssss",
+"E:ssss.sssssddssddssss.ssss",
+"F:ssss.ssssssddddsssss.ssss",
+"G:ssss.sssssssssssssss.ssss",
+"H:ssss.sssddssddssddss.ssss",
+"I:ssss.sssssssssssssss.ssss",
+"J:ssss.sssddssssssddss.ssss",
+"K:ssss.sssssssssssssss.ssss"
+],
+"first": 5,
+"note": ""
+},
+{
+"key": "b4",
+"cinema": "Cinéma B",
+"name": "Salles 4, 5",
+"halls": [
+4,
+5
+],
+"cap": 87,
+"rows": [
+"A:.s.ss",
+"B:ssddssddssddss",
+"C:ssddssddssddss",
+"D:ssssssssssssss",
+"E:ssssddssddssss",
+"F:sssssddddsssss",
+"G:ssssssssssssss"
+],
+"first": 11,
+"note": ""
+},
+{
+"key": "b6",
+"cinema": "Cinéma B",
+"name": "Salle 6",
+"halls": [
+6
+],
+"cap": 158,
+"rows": [
+"A:ssssssssss.ss.ss",
+"B:sssddssddssddsss",
+"C:sssddssddssddsss",
+"D:ssssssssssssssss",
+"E:sssssddssddsssss",
+"F:ssssssddddssssss",
+"G:ssssssssssssssss",
+"H:sssddssddssddsss",
+"I:ssssssssssssssss",
+"J:sssddssssssddsss"
+],
+"first": 9,
+"note": ""
+},
+{
+"key": "c1",
+"cinema": "Cinéma C",
+"name": "Salle 1",
+"halls": [
+1
+],
+"cap": 378,
+"rows": [
+"M:ssssssss.ssssssssddssssss.ssssssss",
+"L:ssssssss.sssddssddssddsss.ssssssss",
+"K:ssssssss.ssssssssssssssss.ssssssss",
+"J:ssddssss.ssssssssssssssss.ssssddss",
+"I:.........ssssssddddssssss",
+"H:.........ssssssssssssssss",
+"G:ssssddss.sssddssddsssddss.ssssssss",
+"F:ssssssss.ssssssssssssssss.sddsssss",
+"E:ssssssss.sssddsssssssddss.ssssssss",
+"D:ssssssdd.ssssssddddssssss.ssssssss",
+"C:ssssssss.ssssssssssssssss.ssssssss",
+"B:ssddssss.sssddsssssssddss.ssssddss",
+"A:s.ss..ss.sssssss.wssss.ss.ss.s.s.s"
+],
+"first": 1,
+"note": ""
+},
+{
+"key": "c2",
+"cinema": "Cinéma C",
+"name": "Salles 2, 3",
+"halls": [
+2,
+3
+],
+"cap": 126,
+"rows": [
+"J:ssssssw..sssssss",
+"I:ssssssddddssssss",
+"H:ssssssssssssssss",
+"G:sssddssddssddsss",
+"F:ssssssssssssssss",
+"E:sssddsssssssddss",
+"D:ssssssddddssssss",
+"C:ssssssssssssssss"
+],
+"first": 9,
+"note": ""
+},
+{
+"key": "c4",
+"cinema": "Cinéma C",
+"name": "Salle 4",
+"halls": [
+4
+],
+"cap": 204,
+"rows": [
+"K:ssss.ssssssssw.sssss.ssss",
+"J:ssss.sssssssssssssss.ssss",
+"I:ssss.ssssssddddsssss.ssss",
+"H:ssss.sssssssssssssss.ssss",
+"G:ddss.sssddssddssddss.ssss",
+"F:ssss.sssssssssssssss.ssdd",
+"E:ssss.sssddsssssssdds.ssss",
+"D:ssdd.ssssssddddsssss.ssss",
+"C:ssss.ssss.ssssss.sss.ssss"
+],
+"first": 5,
+"note": ""
+},
+{
+"key": "c5",
+"cinema": "Cinéma C",
+"name": "Salle 5",
+"halls": [
+5
+],
+"cap": 249,
+"rows": [
+"K:ssss.sssss.ssw.sssss.ssss",
+"J:ssss.sssssssssssssss.ssss",
+"I:ssss.ssssssddddsssss.ssss",
+"H:ssss.sssssssssssssss.ssss",
+"G:ssdd.sssddssddssddss.ssss",
+"F:ssss.sssssssssssssss.ssdd",
+"E:ssss.sssddsssssssdds.ssss",
+"D:ssdd.ssssssddddsssss.ssss",
+"C:ssss.sssssssssssssss.ssss",
+"B:ssss.sssddsssssssdds.ssss",
+"A:ssss.ssss.ssssss.sss.ssss"
+],
+"first": 5,
+"note": ""
+},
+{
+"key": "c6",
+"cinema": "Cinéma C",
+"name": "Salle 6",
+"halls": [
+6
+],
+"cap": 167,
+"rows": [
+"L:ss.sddssddssdsw..ss",
+"K:ss.sssssssssssss.ss",
+"J:ss.sssssssssssss.ss",
+"I:ss.ssssddddsssss.ss",
+"H:ss.sssssssssssss.ss",
+"G:ss.sddssddssddss.ss",
+"F:ss.sssssssssssss.ss",
+"E:ss.sddsssssssdds.ss",
+"D:ss.ssssddddsssss.ss",
+"C:ss.sss.sssss.sss.ss"
+],
+"first": 9,
+"note": ""
+}
+]

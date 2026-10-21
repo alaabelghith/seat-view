@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Voyez l'écran depuis votre siège avant de réserver — démo 3D par Anything Visual.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>Cinéma 3D Seat View</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: full-bleed 3D auditorium; a docked "ticket stub" panel (right on desktop, bottom sheet on phone). Single dark look on purpose: it is a cinema. */
+:root{
+  --velvet:#170d14; --velvet-2:#241520; --panel:rgba(23,13,20,.9); --line:#3e2a36;
+  --ink:#f4ebde; --muted:#b7a496; --amber:#f2b33d; --amber-ink:#2a1a05;
+  --free:#7a96bd; --duo:#9a88d0; --access:#5db59c; --warn:#e88a6a;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--velvet);color:var(--ink);font-family:var(--body);overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#stage{position:fixed;inset:0}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.panel{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));
+  bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(520px,46vw);background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;backdrop-filter:blur(10px);display:flex;flex-direction:column;gap:14px;padding:16px;overflow:hidden}
+.top{display:flex;gap:8px;align-items:center}
+select{flex:1;min-width:0;font:inherit;font-size:.95rem;background:var(--velvet-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.icon{flex:none;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;border:1px solid var(--line);background:var(--velvet-2);color:var(--ink);cursor:pointer;padding:0}
+.icon:hover{border-color:var(--muted)}
+.mapwrap{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;justify-content:center}
+.map{display:grid;gap:var(--gap,3px);width:max-content;margin:0 auto}
+.screenbar{height:5px;border-radius:3px;background:var(--ink);opacity:.85;margin:14px 10% 0;box-shadow:0 0 14px var(--ink)}
+.maprow{display:flex;align-items:center;gap:var(--gap,3px)}
+.maprow .rl{width:16px;font-family:var(--mono);font-size:.62rem;color:var(--muted);text-align:center;flex:none}
+.s{width:var(--cell,14px);height:var(--cell,14px);padding:0;border-radius:4px 4px 2px 2px;border:none;background:var(--free);flex:none;cursor:pointer}
+.s:hover{filter:brightness(1.3)}
+.s.duo{width:calc(var(--cell,14px)*2 + var(--gap,3px));background:var(--duo)} .s.duo1{background:var(--duo)} .s.wc{background:var(--access)}
+.s.cur{background:var(--amber);box-shadow:0 0 0 2px var(--ink)}
+.g{width:var(--cell,14px);flex:none} .g.aisle{width:calc(var(--cell,14px)*1.4)}
+.foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.free{font-family:var(--display);font-weight:800;font-size:1.6rem;letter-spacing:.02em;line-height:1}
+.free small{display:block;font-family:var(--body);font-weight:400;font-size:.75rem;color:var(--muted);letter-spacing:0;margin-top:2px}
+.seat{font-family:var(--mono);font-size:.9rem;color:var(--amber);min-width:3ch}
+.book{margin-left:auto;display:inline-block;text-decoration:none;border:none;cursor:pointer;font-family:inherit;background:var(--amber);color:var(--amber-ink);font-weight:600;border-radius:10px;padding:12px 18px;font-size:.95rem}
+.book:hover{filter:brightness(1.08)} .book:active,.book.pressed{transform:scale(.96)}
+@media (max-width:760px){
+  .panel{top:auto;left:max(16px,env(safe-area-inset-left,0px));width:auto;max-height:58%;padding:12px;gap:10px}
+  .free{font-size:1.3rem}
+}
+</style>
+
+</head><body>
+<div id="stage" aria-label="3D view of the cinema hall"></div>
+
+<aside class="panel">
+  <div class="top">
+    <select id="hallSel" aria-label="Salle"></select>
+    <button class="icon" id="b-view" aria-label="Vue depuis l'écran" title="Vue depuis l'écran"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+  </div>
+  <div class="mapwrap" id="mapwrap">
+    <div class="map" id="map"></div>
+    <div class="screenbar" aria-hidden="true"></div>
+  </div>
+  <div class="foot">
+    <div class="free" id="free"></div>
+    <div class="seat" id="seat" aria-live="polite"></div>
+    <button class="book" id="book" type="button">Réservez maintenant</button>
+  </div>
+</aside>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* Seat maps, back row first. s seat · d duo half · w wheelchair place · . empty cell */
+const HALLS = [{"key":"a1","cinema":"Cinéma A","name":"Salle 1","halls":[1],"cap":379,"rows":["A:ssss.ssssssssddssssss.ssss","B:ssss.ssssssssssssssss.ssss","C:ssss.sssddssddssddsss.ssss","D:ssss.ssssssssssssssss.ssss","E:ssss.ssssssddddssssss.ssss","F:ddss.ssssssssssssssss.ssdd","G:ssss.ssssssssssssssss.ssss","H:ssss.ssssssssssssssss.ssss","I:ssss.sssddsssssssddss.ssss","J:ssss.ssssssddddssssss.ssss","K:ssss.ssssssssssssssss.ssss","L:ssss.ssssssssssssssss.ssss","M:ss.s.ss.ssssss.ss.sss.sss","N:ssss.sssddssddsssddss.ssss","O:ssss.ssssssddddssssss.ssss","P:ssss.ssssssssssssssss.ssss"],"first":1,"note":""},{"key":"a2","cinema":"Cinéma A","name":"Salle 2","halls":[2],"cap":244,"rows":["A:ss.ssssssssddsssss.ss","B:ss.sssssssssssssss.ss","C:ss.sssddssddssddss.ss","D:ss.sssssssssssssss.ss","E:ss.ssssssddddsssss.ss","F:ss.sssssssssssssss.ss","G:ss.sssssssssssssss.ss","H:ss.sssssssssssssss.ss","I:ss.sssddsssssssdds.ss","J:ss.ssssssddddsssss.ss","K:ss.sssssssssssssss.ss","L:ss.sssssssssssssss.ss","M:ss.sssss..ss.sssss.ss"],"first":3,"note":""},{"key":"a3","cinema":"Cinéma A","name":"Salle 3","halls":[3],"cap":168,"rows":["A:ss.ssssssssddsssss.ss","B:ss.sssssssssssssss.ss","C:ss.sssddssddssddss.ss","D:ss.sssssssssssssss.ss","E:ss.ssssssddddsssss.ss","F:ss.sssssssssssssss.ss","G:ss.sssssssssssssss.ss","H:ss.sssssssssssssss.ss","I:ss.sw.dd.ssssss.dd.ss"],"first":3,"note":""},{"key":"a4","cinema":"Cinéma A","name":"Salle 4","halls":[4],"cap":225,"rows":["A:ss.ss.sssssddss.ss.ss","B:ss.sssssssssssssss.ss","C:ss.sssddssddssddss.ss","D:ss.sssssssssssssss.ss","E:ss.ssssssddddsssss.ss","F:ss.sssssssssssssss.ss","G:ss.sssssssssssssss.ss","H:ss.sssssssssssssss.ss","I:ss.sssddsssssssdds.ss","J:ss.ssssssddddsssss.ss","K:ss.sssssssssssssss.ss","L:ss.ssssssss.ssssss.ss"],"first":3,"note":""},{"key":"a5","cinema":"Cinéma A","name":"Salle 5","halls":[5],"cap":178,"rows":["A:ssss.ssssssddssss.ssss","B:ssss.ssssssssssss.ssss","C:ssss.sddssddssdds.ssss","D:ssss.ssssssssssss.ssss","E:ssss.ssssddddssss.ssss","F:ssss.ssssssssssss.ssss","G:ssss.ssssssssssss.ssss","H:ssss.ssssssssssss.ssss","I:ssss.sdd.sssss.dd.ssss"],"first":3,"note":""},{"key":"a6","cinema":"Cinéma A","name":"Salles 6, 7, 8","halls":[6,7,8],"cap":126,"rows":["A:ssssssssdd.sssss","B:ssssssssssssssss","C:sssddssddssddsss","D:ssssssssssssssss","E:ssssssddddssssss","F:ssssssssssssssss","G:ssssssssssssssss","H:ssssssssss.sssss"],"first":5,"note":""},{"key":"b1","cinema":"Cinéma B","name":"Salle 1","halls":[1],"cap":408,"rows":["A:ssssssdd...s.ss.ss.ss.s...ddssssss","B:ssssssss.sssddssddssddsss.ssssssss","C:ssssssss.sssddssddssddsss.ssssssss","D:....ssss.ssssssssssssssss.ssss","E:....ssss.sssssddssddsssss.ssss","F:....ssss.ssssssddddssssss.ssss","G:....ssss.ssssssssssssssss.ssss","H:.........sssddssddssddsss","I:.........ssssssssssssssss","J:ssssssss.sssddssssssddsss.ssssssss","K:ssssssss.ssssssddddssssss.ssssssss","L:ssssssss.ssssssssssssssss.ssssssss","M:ssddssss.sssddssssssddsss.ssssddss","N:ssssssss.sssssssddsssssss.ssssssss","O:ssssssss.ssssssssssssssss.ssssssss"],"first":1,"note":""},{"key":"b2","cinema":"Cinéma B","name":"Salle 2","halls":[2],"cap":138,"rows":["A:sdd.s.ssssssssss.s.dds","B:sss.ssddssddssddss.sss","C:sss.ssddssddssddss.sss","D:sss.ssssssssssssss.sss","E:sss.ssssddssddssss.sss","F:sss.sssssddddsssss.sss","G:sss.ssssssssssssss.sss"],"first":6,"note":""},{"key":"b3","cinema":"Cinéma B","name":"Salle 3","halls":[3],"cap":250,"rows":["A:ssss.ss.sss.ssss.sss.ddss","B:ssss.sssddssddssddss.ssss","C:ssss.sssddssddssddss.ssss","D:ssss.sssssssssssssss.ssss","E:ssss.sssssddssddssss.ssss","F:ssss.ssssssddddsssss.ssss","G:ssss.sssssssssssssss.ssss","H:ssss.sssddssddssddss.ssss","I:ssss.sssssssssssssss.ssss","J:ssss.sssddssssssddss.ssss","K:ssss.sssssssssssssss.ssss"],"first":5,"note":""},{"key":"b4","cinema":"Cinéma B","name":"Salles 4, 5","halls":[4,5],"cap":87,"rows":["A:.s.ss","B:ssddssddssddss","C:ssddssddssddss","D:ssssssssssssss","E:ssssddssddssss","F:sssssddddsssss","G:ssssssssssssss"],"first":11,"note":""},{"key":"b6","cinema":"Cinéma B","name":"Salle 6","halls":[6],"cap":158,"rows":["A:ssssssssss.ss.ss","B:sssddssddssddsss","C:sssddssddssddsss","D:ssssssssssssssss","E:sssssddssddsssss","F:ssssssddddssssss","G:ssssssssssssssss","H:sssddssddssddsss","I:ssssssssssssssss","J:sssddssssssddsss"],"first":9,"note":""},{"key":"c1","cinema":"Cinéma C","name":"Salle 1","halls":[1],"cap":378,"rows":["M:ssssssss.ssssssssddssssss.ssssssss","L:ssssssss.sssddssddssddsss.ssssssss","K:ssssssss.ssssssssssssssss.ssssssss","J:ssddssss.ssssssssssssssss.ssssddss","I:.........ssssssddddssssss","H:.........ssssssssssssssss","G:ssssddss.sssddssddsssddss.ssssssss","F:ssssssss.ssssssssssssssss.sddsssss","E:ssssssss.sssddsssssssddss.ssssssss","D:ssssssdd.ssssssddddssssss.ssssssss","C:ssssssss.ssssssssssssssss.ssssssss","B:ssddssss.sssddsssssssddss.ssssddss","A:s.ss..ss.sssssss.wssss.ss.ss.s.s.s"],"first":1,"note":""},{"key":"c2","cinema":"Cinéma C","name":"Salles 2, 3","halls":[2,3],"cap":126,"rows":["J:ssssssw..sssssss","I:ssssssddddssssss","H:ssssssssssssssss","G:sssddssddssddsss","F:ssssssssssssssss","E:sssddsssssssddss","D:ssssssddddssssss","C:ssssssssssssssss"],"first":9,"note":""},{"key":"c4","cinema":"Cinéma C","name":"Salle 4","halls":[4],"cap":204,"rows":["K:ssss.ssssssssw.sssss.ssss","J:ssss.sssssssssssssss.ssss","I:ssss.ssssssddddsssss.ssss","H:ssss.sssssssssssssss.ssss","G:ddss.sssddssddssddss.ssss","F:ssss.sssssssssssssss.ssdd","E:ssss.sssddsssssssdds.ssss","D:ssdd.ssssssddddsssss.ssss","C:ssss.ssss.ssssss.sss.ssss"],"first":5,"note":""},{"key":"c5","cinema":"Cinéma C","name":"Salle 5","halls":[5],"cap":249,"rows":["K:ssss.sssss.ssw.sssss.ssss","J:ssss.sssssssssssssss.ssss","I:ssss.ssssssddddsssss.ssss","H:ssss.sssssssssssssss.ssss","G:ssdd.sssddssddssddss.ssss","F:ssss.sssssssssssssss.ssdd","E:ssss.sssddsssssssdds.ssss","D:ssdd.ssssssddddsssss.ssss","C:ssss.sssssssssssssss.ssss","B:ssss.sssddsssssssdds.ssss","A:ssss.ssss.ssssss.sss.ssss"],"first":5,"note":""},{"key":"c6","cinema":"Cinéma C","name":"Salle 6","halls":[6],"cap":167,"rows":["L:ss.sddssddssdsw..ss","K:ss.sssssssssssss.ss","J:ss.sssssssssssss.ss","I:ss.ssssddddsssss.ss","H:ss.sssssssssssss.ss","G:ss.sddssddssddss.ss","F:ss.sssssssssssss.ss","E:ss.sddsssssssdds.ss","D:ss.ssssddddsssss.ss","C:ss.sss.sssss.sss.ss"],"first":9,"note":""}];
+const DEFAULT_KEY = 'a2';
+const PW = 0.58, AISLE = 1.0, ROW_D = 1.05, EYE = 1.15;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+
+/* ---------- Parse a hall into seats ---------- */
+function build(h){
+  const raw = h.rows.map(r => { const [L, s] = r.split(':'); return { L, s }; });
+  const maxLen = Math.max(...raw.map(r => r.s.length));
+  const full = raw.filter(r => r.s.length === maxLen);
+  const aisle = [...Array(maxLen)].map((_, c) => full.filter(r => r.s[c] === '.').length >= Math.max(2, full.length * .75));
+  const colX = []; let x = 0;
+  for (let c = 0; c < maxLen; c++){ const w = aisle[c] ? AISLE : PW; colX.push(x + w/2); x += w; }
+  const width = x; colX.forEach((v, i) => colX[i] = v - width/2);
+  const nonAisleBefore = c => { let n = 0; for (let i = 0; i < c; i++) if (!aisle[i]) n++; return n; };
+  const firstCol = raw[0].s.search(/[sdw]/);
+  const base = h.first - nonAisleBefore(firstCol);
+  const nRows = raw.length, rake = nRows >= 10 ? .34 : .3;
+  const screenW = Math.min(20, Math.max(7.5, width * .82));
+  const firstZ = Math.max(4.2, screenW * .5);
+  const seats = [], mapRows = [];
+  raw.slice().reverse().forEach((row, r) => {            // r = 0 is the front row
+    const s = row.s.padEnd(maxLen, '.'), y = r * rake, z = firstZ + r * ROW_D, cells = [];
+    for (let c = 0; c < maxLen; c++){
+      const ch = s[c];
+      if (ch === '.') { cells.push({ gap: true, aisle: aisle[c] }); continue; }
+      const num = base + nonAisleBefore(c);
+      if (ch === 'd' && s[c+1] === 'd'){
+        const seat = { row: row.L, r, label: `${num}–${num+1}`, w: 2, kind: 'duo', x: (colX[c] + colX[c+1]) / 2, y, z, i: seats.length };
+        seats.push(seat); cells.push({ seat }); c++;
+      } else {
+        const seat = { row: row.L, r, label: `${num}`, w: 1, kind: ch === 'w' ? 'wc' : ch === 'd' ? 'duo1' : 'std', x: colX[c], y, z, i: seats.length };
+        seats.push(seat); cells.push({ seat });
+      }
+    }
+    mapRows.unshift({ L: row.L, cells });
+  });
+  const places = seats.reduce((a, s) => a + s.w, 0);
+  const aisleX = colX.filter((_, c) => aisle[c]);
+  const screenH = screenW / 2.39, screenBottom = 1.4;
+  return { h, seats, mapRows, width, nRows, rake, screenW, screenH, screenBottom, firstZ, places, aisleX,
+    SCREEN_C: new THREE.Vector3(0, screenBottom + screenH/2, 0),
+    hallLen: firstZ + nRows * ROW_D + 2.5, hallW: width + 2.8, height: Math.max(7, 5.5 + nRows * .3 + nRows * rake) };
+}
+
+function metrics(H, s){
+  const ex = s.x, ey = s.y + EYE, ez = s.z + .1, W = H.screenW/2;
+  return {
+    hAngle: (Math.atan((W - ex)/ez) + Math.atan((W + ex)/ez)) * 180/Math.PI,
+    tilt: Math.atan((H.SCREEN_C.y - ey)/ez) * 180/Math.PI,
+    off: Math.atan(Math.abs(ex)/ez) * 180/Math.PI,
+    dist: Math.hypot(ex, ey - H.SCREEN_C.y, ez),
+    eye: new THREE.Vector3(ex, ey, ez)
+  };
+}
+
+/* ---------- Renderer ---------- */
+const stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0c070b);
+scene.fog = new THREE.Fog(0x0c070b, 35, 90);
+const camera = new THREE.PerspectiveCamera(55, 1, .05, 300);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.maxDistance = 70; controls.minDistance = 1.5; controls.maxPolarAngle = Math.PI*.49;
+scene.add(new THREE.HemisphereLight(0x8a6f86, 0x1a0e14, .55));
+const screenLight = new THREE.PointLight(0xbfd2ff, 70, 50, 1.6); scene.add(screenLight);
+const backLight = new THREE.PointLight(0xffb070, 30, 40, 1.8); scene.add(backLight);
+
+// animated screen texture, shared by all halls
+const sc = document.createElement('canvas'); sc.width = 1024; sc.height = Math.round(1024/2.39);
+const sg = sc.getContext('2d'); const stex = new THREE.CanvasTexture(sc); stex.colorSpace = THREE.SRGBColorSpace;
+function drawScreen(t){
+  const W = sc.width, Hh = sc.height;
+  const sky = sg.createLinearGradient(0,0,0,Hh); sky.addColorStop(0,'#14234a'); sky.addColorStop(.62,'#d9805a'); sky.addColorStop(1,'#f3c27a');
+  sg.fillStyle = sky; sg.fillRect(0,0,W,Hh);
+  sg.fillStyle = '#ffe2a6'; sg.beginPath(); sg.arc(W*.62, Hh*.58 - Math.sin(t*.05)*10, 46, 0, 7); sg.fill();
+  [['#7a3d4a',.55,.12,40],['#4b2232',.68,.25,55],['#22101a',.82,.5,70]].forEach(([c,base,sp,amp],k)=>{
+    sg.fillStyle = c; sg.beginPath(); sg.moveTo(0,Hh);
+    for (let x=0;x<=W;x+=8){ const u=(x+t*sp*60)/W; sg.lineTo(x, Hh*base - amp*(Math.sin(u*6.3+k)*.6+Math.sin(u*13.1+k*2)*.3+Math.sin(u*29+k)*.1)); }
+    sg.lineTo(W,Hh); sg.fill();
+  });
+  stex.needsUpdate = true;
+}
+drawScreen(0);
+
+const COL = { std: new THREE.Color(0x4f6c94), duo: new THREE.Color(0x6a5a9a), duo1: new THREE.Color(0x6a5a9a), wc: new THREE.Color(0x3f9a80), cur: new THREE.Color(0xf2b33d), hov: new THREE.Color(0x9fb8dc) };
+let H = null, group = null, cushion = null, back = null, current = null, hovered = null;
+let mode = 'hall', tween = null, yaw = 0, pitch = 0;
+const curTarget = new THREE.Vector3(), OVER_POS = new THREE.Vector3(), OVER_T = new THREE.Vector3();
+
+function mkLabel(text, color, w, h){
+  const c = document.createElement('canvas'); c.width=256; c.height=96; const g=c.getContext('2d');
+  g.fillStyle='#0b1a10'; g.fillRect(0,0,256,96); g.fillStyle=color; g.font='bold 64px Arial'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,128,52);
+  return new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c) }));
+}
+function disposeGroup(g){ g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material){ if (o.material.map && o.material.map !== stex) o.material.map.dispose(); o.material.dispose(); } }); scene.remove(g); }
+
+function loadHall(key){
+  const h = HALLS.find(x => x.key === key) || HALLS[0];
+  H = build(h); current = null; hovered = null; tween = null; mode = 'hall';
+  if (group) disposeGroup(group);
+  group = new THREE.Group(); scene.add(group);
+  const mat = (c, r=.85) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
+  const box = (w,hh,d,m,x,y,z) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w,hh,d), m); o.position.set(x,y,z); group.add(o); return o; };
+  const { hallW, hallLen, height } = H;
+  box(hallW, .1, hallLen+1, mat(0x2a1a22), 0, -.05, hallLen/2);
+  const wallM = mat(0x2b1620);
+  box(.2, height, hallLen, wallM, -hallW/2, height/2, hallLen/2);
+  box(.2, height, hallLen, wallM,  hallW/2, height/2, hallLen/2);
+  box(hallW, height, .2, mat(0x120a0f), 0, height/2, -.3);
+  box(hallW, height, .2, wallM, 0, height/2, hallLen);
+  box(hallW, .2, hallLen, mat(0x0f090d), 0, height, hallLen/2);
+  { const n = Math.floor(hallLen/0.9), im = new THREE.InstancedMesh(new THREE.BoxGeometry(.12, height*.72, .5), mat(0x4a2233,.7), n*2), m4 = new THREE.Matrix4();
+    for (let i=0;i<n;i++) for (const sx of [-1,1]) { m4.makeTranslation(sx*(hallW/2-.15), height*.52, .8+i*.9); im.setMatrixAt(i*2+(sx>0), m4); } group.add(im); }
+  const platM = mat(0x341f29);
+  for (let r=1;r<=H.nRows;r++){
+    const hh = r*H.rake, last = r===H.nRows, z = H.firstZ + r*ROW_D - ROW_D/2 + (last?1.2:0);
+    box(hallW-.2, hh, ROW_D + (last?2.4:0), platM, 0, hh/2, z);
+  }
+  const lm = new THREE.MeshBasicMaterial({ color: 0xffb35c });
+  const xs = [...H.aisleX, -H.width/2-.7, H.width/2+.7];
+  for (let r=0;r<H.nRows;r++) for (const ax of xs) box(.35,.03,.04,lm, ax, r*H.rake+.03, H.firstZ + r*ROW_D - ROW_D/2 + .02);
+  for (const sx of [-1,1]){ const e = mkLabel('EXIT','#4dff88',.9,.34); e.position.set(sx*(hallW/2-.12), 2.6, 2.5); e.rotation.y = -sx*Math.PI/2; group.add(e); }
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(H.screenW, H.screenH), new THREE.MeshBasicMaterial({ map: stex, toneMapped:false }));
+  screen.position.copy(H.SCREEN_C); screen.position.z = .05; group.add(screen);
+  box(H.screenW+.6, H.screenH+.6, .05, new THREE.MeshBasicMaterial({ color: 0x050304 }), 0, H.SCREEN_C.y, 0);
+  const curM = mat(0x5a1424,.95), curH = height-.4;
+  for (const sx of [-1,1]) for (let i=0;i<10;i++){ const cx = sx*(H.screenW/2+.5+i*.17); if (Math.abs(cx) < hallW/2-.2) box(.18, curH, .25, curM, cx, curH/2, .25+(i%2)*.08); }
+  screenLight.position.set(0, H.SCREEN_C.y, 2.5); backLight.position.set(0, height-1.5, hallLen-2);
+  cushion = new THREE.InstancedMesh(new THREE.BoxGeometry(1,.14,.5), mat(0xffffff,.9), H.seats.length);
+  back = new THREE.InstancedMesh(new THREE.BoxGeometry(1,.66,.12), mat(0xffffff,.9), H.seats.length);
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
+  H.seats.forEach(s => {
+    const scl = new THREE.Vector3(s.w*PW - .08, 1, 1);
+    if (s.kind === 'wc'){ m4.compose(new THREE.Vector3(s.x, s.y+.03, s.z), q, new THREE.Vector3(PW-.08,.3,1.2)); cushion.setMatrixAt(s.i, m4);
+      m4.compose(new THREE.Vector3(s.x, s.y-.5, s.z), q, new THREE.Vector3(.01,.01,.01)); back.setMatrixAt(s.i, m4); return; }
+    m4.compose(new THREE.Vector3(s.x, s.y+.44, s.z), q, scl); cushion.setMatrixAt(s.i, m4);
+    m4.compose(new THREE.Vector3(s.x, s.y+.78, s.z+.26), q, scl); back.setMatrixAt(s.i, m4);
+  });
+  group.add(cushion, back);
+  OVER_POS.set(0, H.SCREEN_C.y + (innerWidth < innerHeight ? 1.6 : 0.4), 0.7);
+  OVER_T.set(0, H.nRows*H.rake*.5 + .9, H.firstZ + H.nRows*ROW_D*.55);
+  camera.position.copy(OVER_POS); controls.target.copy(OVER_T); controls.enabled = true; curTarget.copy(OVER_T);
+  H.best = H.seats.filter(s=>s.kind!=='wc').map(s=>({s,m:metrics(H,s)}))
+    .sort((a,b)=>(Math.abs(a.m.hAngle-36)+a.m.off*.6)-(Math.abs(b.m.hAngle-36)+b.m.off*.6))[0].s;
+  document.title = `${h.cinema} ${h.name}`;
+  buildMap(); sizeMap(); paint(); render();
+}
+
+function paint(){
+  H.seats.forEach(s=>{
+    const c = s === current ? COL.cur : s === hovered ? COL.hov : COL[s.kind];
+    cushion.setColorAt(s.i, c); back.setColorAt(s.i, c);
+  });
+  cushion.instanceColor.needsUpdate = back.instanceColor.needsUpdate = true;
+}
+
+/* ---------- Camera moves ---------- */
+function startTween(toPos, toTarget, done){
+  const fromPos = camera.position.clone(), fromT = (mode==='hall' ? controls.target.clone() : curTarget.clone());
+  if (reduce){ camera.position.copy(toPos); curTarget.copy(toTarget); camera.lookAt(toTarget); done&&done(); return; }
+  tween = { fromPos, fromT, toPos, toTarget, t: 0, done };
+}
+function sitIn(s){
+  current = s; yaw = pitch = 0;
+  controls.enabled = false;
+  if (mode === 'hall') curTarget.copy(controls.target);
+  startTween(metrics(H, s).eye, H.SCREEN_C.clone(), ()=>{ mode='seat'; });
+  if (mode === 'hall') mode = 'moving';
+  paint(); render();
+}
+function backToHall(){
+  current = null;
+  startTween(OVER_POS.clone(), OVER_T.clone(), ()=>{ mode='hall'; controls.target.copy(OVER_T); controls.enabled = true; });
+  if (!reduce) mode = 'moving';
+  paint(); render();
+}
+function step(d){ const n = H.seats[(current.i + d + H.seats.length) % H.seats.length]; sitIn(n); }
+
+/* ---------- Picking ---------- */
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+function pick(e){
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+  ray.setFromCamera(ptr, camera);
+  const hit = ray.intersectObjects([cushion, back])[0];
+  return hit ? H.seats[hit.instanceId] : null;
+}
+const kindName = s => s.kind==='wc' ? 'Wheelchair place' : s.w===2 ? 'Duo seat' : 'Seat';
+let down = null, dragging = false;
+renderer.domElement.addEventListener('pointerdown', e=>{ down = {x:e.clientX,y:e.clientY,yaw,pitch}; dragging = false; });
+renderer.domElement.addEventListener('pointermove', e=>{
+  if (down && mode==='seat'){
+    const dx = e.clientX-down.x, dy = e.clientY-down.y;
+    if (Math.abs(dx)+Math.abs(dy) > 4) dragging = true;
+    yaw = THREE.MathUtils.clamp(down.yaw - dx*.004, -1.2, 1.2);
+    pitch = THREE.MathUtils.clamp(down.pitch - dy*.004, -.5, .6);
+    return;
+  }
+  if (down && Math.abs(e.clientX-down.x)+Math.abs(e.clientY-down.y) > 4) dragging = true;
+  if (e.pointerType === 'mouse'){
+    const s = pick(e);
+    if (s !== hovered){ hovered = s; paint(); }
+    renderer.domElement.style.cursor = s ? 'pointer' : (mode==='seat'?'grab':'default');
+  }
+});
+renderer.domElement.addEventListener('pointerup', e=>{ if (down && !dragging){ const s = pick(e); if (s) sitIn(s); } down = null; });
+addEventListener('keydown', e=>{
+  if (e.target.tagName === 'SELECT') return;
+  if (e.target.tagName === 'BUTTON' && (e.key==='Enter'||e.key===' ')) return;
+  if (e.key === 'Escape' && current) backToHall();
+  if (current && e.key === 'ArrowRight') step(1);
+  if (current && e.key === 'ArrowLeft') step(-1);
+});
+
+/* ---------- Panel ---------- */
+const fmt = (v,d=1) => v.toFixed(d);
+const sid = s => s.row + s.label;
+function render(){
+  $('free').innerHTML = `${H.places}<small>places libres</small>`;
+  $('seat').textContent = current ? `${current.row} ${current.label}` : '';
+  document.querySelectorAll('.s').forEach(b => b.classList.toggle('cur', !!current && +b.dataset.i === current.i));
+}
+function sizeMap(){
+  const wrap = $('mapwrap'), map = $('map');
+  const cols = Math.max(...H.mapRows.map(r => r.cells.reduce((a,c)=> a + (c.gap && c.aisle ? 1.4 : c.seat && c.seat.w===2 ? 2 : 1), 0)));
+  const gap = 3, avail = wrap.clientWidth - 2*16 - 2*gap - 4;
+  const n = H.mapRows[0].cells.length;
+  let cell = Math.floor((avail - gap*(n+2)) / cols);
+  const availH = wrap.clientHeight - 24;
+  cell = Math.min(cell, Math.floor(availH / H.mapRows.length) - gap);
+  cell = Math.max(7, Math.min(26, cell));
+  map.style.setProperty('--cell', cell + 'px'); map.style.setProperty('--gap', gap + 'px');
+}
+function buildMap(){
+  const map = $('map'); map.innerHTML = '';
+  H.mapRows.forEach(row => {
+    const div = document.createElement('div'); div.className = 'maprow';
+    div.innerHTML = `<span class="rl">${row.L}</span>`;
+    row.cells.forEach(cell => {
+      if (cell.gap){ const g = document.createElement('span'); g.className = 'g' + (cell.aisle ? ' aisle' : ''); div.appendChild(g); return; }
+      const s = cell.seat, b = document.createElement('button');
+      b.className = 's ' + (s.w===2 ? 'duo' : s.kind); b.dataset.i = s.i; b.title = `${s.row} ${s.label}`;
+      b.setAttribute('aria-label', `Rang ${s.row}, place ${s.label}`);
+      b.onclick = () => sitIn(s); div.appendChild(b);
+    });
+    div.insertAdjacentHTML('beforeend', `<span class="rl">${row.L}</span>`);
+    map.appendChild(div);
+  });
+}
+
+/* ---------- Hall picker ---------- */
+{
+  const sel = $('hallSel');
+  [...new Set(HALLS.map(h=>h.cinema))].forEach(cin => {
+    const og = document.createElement('optgroup'); og.label = cin;
+    HALLS.filter(h=>h.cinema===cin).forEach(h => { const o = document.createElement('option'); o.value = h.key; o.textContent = `${h.cinema} · ${h.name}`; og.appendChild(o); });
+    sel.appendChild(og);
+  });
+  $('b-view').onclick = () => backToHall();
+  $('book').onclick = () => { const b = $('book'); b.classList.add('pressed'); setTimeout(()=>b.classList.remove('pressed'), 180); };
+  const fromHash = location.hash.slice(1);
+  const start = HALLS.some(h=>h.key===fromHash) ? fromHash : DEFAULT_KEY;
+  sel.value = start;
+  sel.onchange = () => { loadHall(sel.value); try { history.replaceState(null, '', '#' + sel.value); } catch(e){} };
+  loadHall(start);
+}
+
+/* ---------- Loop ---------- */
+function resize(){ if (H) sizeMap(); const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.fov = w < h ? 72 : 55;
+  // keep the hall centred in the part of the screen the panel does not cover
+  const pr = document.querySelector('.panel').getBoundingClientRect();
+  if (w > 760) { const pw = w - pr.left; camera.aspect = (w + pw)/h; camera.setViewOffset(w + pw, h, pw, 0, w, h); }
+  else { const ph = Math.max(0, h - pr.top); camera.aspect = w/(h + ph); camera.setViewOffset(w, h + ph, 0, ph, w, h); }
+  camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+const ease = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+const clock = new THREE.Clock(); let acc = 0, ft = 0;
+renderer.setAnimationLoop(()=>{
+  const dt = clock.getDelta(); ft += dt; acc += dt;
+  if (acc > 1/30){ drawScreen(reduce ? 0 : ft); acc = 0; }
+  if (tween){
+    tween.t = Math.min(1, tween.t + dt/1.3); const k = ease(tween.t);
+    camera.position.lerpVectors(tween.fromPos, tween.toPos, k);
+    curTarget.lerpVectors(tween.fromT, tween.toTarget, k); camera.lookAt(curTarget);
+    if (tween.t >= 1){ const d = tween.done; tween = null; d && d(); }
+  } else if (mode === 'seat' && current){
+    const eye = metrics(H, current).eye; camera.position.copy(eye);
+    const dir = H.SCREEN_C.clone().sub(eye).normalize();
+    dir.applyAxisAngle(new THREE.Vector3(0,1,0), yaw);
+    const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0)).normalize();
+    dir.applyAxisAngle(right, pitch);
+    curTarget.copy(eye).add(dir.multiplyScalar(10)); camera.lookAt(curTarget);
+  } else if (mode === 'hall'){ controls.update(); }
+  renderer.render(scene, camera);
+});
+</script>
+
+</body></html>
